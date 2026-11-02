@@ -6,7 +6,7 @@
 |---|---|
 | `pdf/YYYY-MM.pdf` | 월별 수출입동향 보도자료 (최신 보도자료가 같은 달 수치를 덮어씀) |
 | `data/export_industry_monthly.csv` | 품목×월 원천 데이터 (억 달러, YoY %) |
-| `data/signals.json` | '투자 신호' 패널 문구 (수동 작성, 기준월 `as_of`) |
+| `signals.py` | '투자 신호' 패널 6개를 데이터로 자동 계산 (규칙 기반) |
 | `update.py` | pdf → csv → `docs/index.html` 재생성 |
 | `fetch_pdf.py` | 산업부 사이트에서 최신 PDF 자동 다운로드(베스트 에포트) |
 | `.github/workflows/update.yml` | 매월 1~5일 자동 실행 |
@@ -14,7 +14,7 @@
 ## 매월 운영
 1. 자동: 워크플로가 PDF를 받아 `update.py` 실행 → `docs/index.html` 커밋. GitHub Pages(`docs/` 폴더)로 게시.
 2. 자동 다운로드가 실패하면: 새 PDF를 `pdf/2026-11.pdf` 형식으로 넣고 커밋(또는 로컬에서 `python update.py`).
-3. `data/signals.json`은 자동 갱신되지 않음 → 최신월이 아니면 화면에 '(기준월 …)'이 표시됨.
+3. '투자 신호' 패널은 `signals.py` 규칙으로 매월 자동 계산됨. 보도자료 본문 해설(차종 믹스, 설비투자 등)은 포함하지 않음.
 
 ## 알아둘 점
 - 2026.6 통계부터 20대 개편: 2025.5 이후는 신규 기준, 이전(2024.1~2025.4)은 개편 전 기준 → 석유제품·철강제품·바이오헬스·섬유·생활용품·의약품은 접합 구간에 수준 차이가 있음.

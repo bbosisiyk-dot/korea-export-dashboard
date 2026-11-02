@@ -1,6 +1,7 @@
 """data/export_industry_monthly.csv → docs/index.html (원본 대시보드와 동일한 레이아웃·CSS)"""
 import csv, json, sys, datetime, html, collections
 from analysis import analyze, classify
+from signals import generate
 from build_data import S1, S2
 def f3(v): return f"{v:.0f}" if abs(v)>=100 else f"{v:.1f}"
 def pc(v,p='%'): return f"{abs(v):.1f}{p}" if round(v,1)==0 else f"{v:+.1f}{p}"
@@ -79,7 +80,7 @@ def article(name,a,c):
         <table class="data-table" aria-label="{name} 월별 수출 데이터"><thead><tr><th scope="col">구분</th>{th}</tr></thead><tbody>{tv}{ty}{td}{tm}{tx}</tbody></table></div>
     </article>'''
 def chips(L,key,suf): return '<div class="chip-wrap">'+''.join(f'<span class="mini-chip"><b>{n}</b> {pc(key(n),suf)}</span>' for n in L)+'</div>'
-def render(S,sig,out='docs/index.html'):
+def render(S,sig=None,out='docs/index.html'):
     A={n:analyze(S[n]) for n in S1+S2}; C={n:classify(n,A[n]) for n in A}; names=list(A)
     last=max(S[n][-1][:2] for n in S); first=min(S[n][0][:2] for n in S); ym=lambda t:f"{t[0]}.{t[1]}"
     top=sorted(names,key=lambda n:-C[n]['L'])[:6]
@@ -89,7 +90,7 @@ def render(S,sig,out='docs/index.html'):
     dec=sorted([n for n in names if C[n]['L']>0 and C[n]['D']<0],key=lambda n:C[n]['D'])[:6]
     now=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y-%m-%d %H:%M')
     css=open('template/style.css',encoding='utf-8').read(); js=open('template/tooltip.js',encoding='utf-8').read()
-    stale='' if sig['as_of']==ym(last) else f' <small>(기준월 {sig["as_of"]} · data/signals.json 수동 갱신 항목)</small>'
+    sig=sig or {'items':generate(A,C)}; stale=' <small>(데이터 기반 자동 생성)</small>'
     sg=''.join(f'<li><strong>{i["title"]}</strong><span>{i["text"]}</span></li>' for i in sig['items'])
     sec=lambda t,p,L,leg='':f'<section><div class="section-head"><div><h2>{t}</h2><p>{p}</p></div>{leg}</div><div class="industry-list">'+''.join(article(n,A[n],C[n]) for n in L)+'</div></section>'
     leg='<div class="legend"><span><i class="l1"></i>수출액</span><span><i class="l2"></i>12M MA</span></div>'
@@ -128,4 +129,4 @@ def render(S,sig,out='docs/index.html'):
 {js}</script></body></html>'''.replace('</main>\n<footer>','</main>\n<footer>').replace('</main-end>\n','')
     open(out,'w',encoding='utf-8').write(H); return A,C
 if __name__=='__main__':
-    render(load(),json.load(open('data/signals.json',encoding='utf-8')))
+    render(load())
